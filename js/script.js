@@ -194,8 +194,8 @@ $(function(){
   setInterval(fadein_fadeout, 4000);
   
   // Contactの入力、送信の設定
-  // Userクラスの作成
-  class User {
+  // Messageクラスの作成
+  class Message {
     name; // 名前
     email; // メール
     comment; // コメント
@@ -237,28 +237,53 @@ $(function(){
   }
   
   // users配列を作成
-  const users = Array();
+  // const users = Array();
   // users.push(new User('iwai', 'iwai@gmail.com', '面白いサイトでした。'));
   // console.log(users);
   
   // 送信ボタンを押したときの処理
-  $('#btn').click(() => {
+  $('#btn').click((e) => {
+    e.preventDefault (); //画面が更新されないように
+    
     // 入力された値を取得
     const name = $('input[name="name"]').val();
     const email = $('input[name="email"]').val();
     const comment = $('textarea[name="comment"]').val();
     // 新しいユーザーを作成
-    const user = new User(name, email, comment);
+    const message = new Message(name, email, comment);
     // 入力値を検証(validateメソッドを実行)
-    const flag = user.validate();
+    const flag = message.validate();
     if(flag === true) {
       // ユーザー一覧に追加
-      users.push(user);
+      // users.push(user);
       $('input[name="name"]').val('');
       $('input[name="email"]').val('');
       $('textarea[name="comment"]').val('');
+      
+      // mail送信
+      $.ajax ({
+        type: 'post',
+        url: 'send_mail.php',
+        datatype: 'json',
+        data: {
+           name: message.name,   // 名前
+           email: message.email,  // メールアドレス
+           comment: message.comment  // コメント
+        }
+      }).done(function (data) {  // ajax通信が成功したら
+        console.log(data);
+        // 送信に成功したならば
+        if (data['result']) {
+          // メール「送信」に成功した時の処理
+          // 画面にメッセージを表示、画面をリロードなど。
+            $('.hw').after($('<p>', {text: '送信を完了しました'}));
+        } else {
+          //メール送信に「失敗」した時の処理
+          // 画面にメッセージを表示など
+          $('.hw').after($('<p>', {text: '送信に失敗しました'}));
+        }
+       });
     }
-    console.log(users);
   });
   
 });
